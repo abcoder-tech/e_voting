@@ -1,4 +1,8 @@
+import 'package:e_voting/pages/announcement_list.dart';
+import 'package:e_voting/pages/announcements.dart';
+import 'package:e_voting/pages/home_page.dart';
 import 'package:e_voting/pages/loginpage.dart';
+import 'package:e_voting/pages/nebe_home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -26,12 +30,17 @@ child: ListView(
     ListTile(
       leading: Icon(Icons.home),
       title: Text("Home"),
-      onTap: ()=>null,
+      onTap: () {
+
+        Navigator.push(context, MaterialPageRoute(builder: (context)=>homepage()));
+      },
     ),
     ListTile(
       leading: Icon(Icons.post_add),
       title: Text("Announcments"),
-      onTap: ()=>null,
+      onTap: (){
+        Navigator.push(context, MaterialPageRoute(builder: (context)=>announcementlist()));
+      },
     ),
     Divider(),
     ListTile(
@@ -44,7 +53,7 @@ child: ListView(
       title: Text("voter"),
       onTap: ()=>null,
     ),ListTile(
-      leading: Icon(Icons.app_registration),
+      leading: Icon(Icons.maps_home_work_sharp),
       title: Text("regional office"),
       onTap: ()=>null,
     ),

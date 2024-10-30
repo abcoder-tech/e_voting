@@ -2,7 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class mybotton extends StatelessWidget {
-  const mybotton({super.key, this.onTap});
+  final String butttontext;
+  const mybotton({super.key, this.onTap, required this.butttontext });
 final Function()? onTap;
 
   @override
@@ -21,9 +22,9 @@ final Function()? onTap;
           borderRadius: BorderRadius.circular(8),
 
         ),
-        child:const Center(
+        child: Center(
           child: Text(
-            "Sign In",
+            butttontext,
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,

@@ -96,7 +96,7 @@ final usernamecontroller = TextEditingController();
                 mybotton(
                   onTap: (){
                     Navigator.push(context, MaterialPageRoute(builder: (context)=>homepage()));
-                  },
+                  }, butttontext: 'Sign In',
                 ),
                 const SizedBox(height: 100,),
               ],
