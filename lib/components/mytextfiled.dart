@@ -6,12 +6,14 @@ class mytextfiled extends StatelessWidget {
   final String hinttext;
   final String labeel;
   final bool obscuretext;
-  final Icon icoon;
+  final IconButton icoon;
+  final String? validity;
   const mytextfiled({super.key,
     this.controller,
     required this.hinttext,
     required this.obscuretext, 
     required this.labeel,
+    required this.validity,
     required this.icoon});
 
   @override
@@ -23,6 +25,8 @@ class mytextfiled extends StatelessWidget {
         obscureText: obscuretext,
         decoration: InputDecoration(
           suffixIcon: icoon,
+          errorStyle: TextStyle(color: Colors.red),
+          errorText: validity,
           label: Text(labeel,style: 
             TextStyle(
               fontWeight: FontWeight.bold,

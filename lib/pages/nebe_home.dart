@@ -1,5 +1,19 @@
+import 'package:e_voting/pages/political_party_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../models/political_party.dart';
+import 'package:e_voting/models/political_party.dart';
+import 'package:e_voting/pages/addpoliticalparty.dart';
+import 'package:e_voting/services/api_service.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:e_voting/pages/announcements.dart';
+import 'package:e_voting/pages/announcment_view.dart';
+import 'package:e_voting/pages/loginpage.dart';
+import 'package:e_voting/pages/nav_bar.dart';
+import 'package:readmore/readmore.dart';
 
 class NebeHome extends StatefulWidget {
   const NebeHome({super.key});
@@ -10,19 +24,20 @@ class NebeHome extends StatefulWidget {
 
 class _NebeHomeState extends State<NebeHome> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late List<Animation<double>> _animations;
+  late List<Animation<Offset>> _animations;
+  int _politicalPartyCount = 0;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 1),
+      duration: const Duration(seconds: 2),
       vsync: this,
     );
 
     // Initialize animations for each container
-    _animations = List.generate(5, (index) {
-      return Tween<double>(begin: -100, end: 0).animate(
+    _animations = List.generate(4, (index) {
+      return Tween<Offset>(begin: Offset(0, -1), end: Offset(0, 0)).animate(
         CurvedAnimation(
           parent: _controller,
           curve: Interval(
@@ -35,10 +50,27 @@ class _NebeHomeState extends State<NebeHome> with SingleTickerProviderStateMixin
     });
 
     // Start the animation
-    Future.delayed(const Duration(milliseconds: 100), () {
-      _controller.forward();
-    });
+    _controller.forward();
+    _fetchPoliticalPartyCount();
   }
+
+
+  Future<void> _fetchPoliticalPartyCount() async {
+    try {
+      final response = await http.get(Uri.parse('${loginPage.apiUrl}countparties')); // Update with your actual endpoint
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+        setState(() {
+          _politicalPartyCount = jsonResponse['count']; // Adjust based on your API response
+        });
+      } else {
+        throw Exception('Failed to load political party count');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
 
   @override
   void dispose() {
@@ -50,7 +82,6 @@ class _NebeHomeState extends State<NebeHome> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
-
     final double baseRadius = screenWidth * 0.05;
 
     return Scaffold(
@@ -74,12 +105,10 @@ class _NebeHomeState extends State<NebeHome> with SingleTickerProviderStateMixin
                   ),
                 ),
               ),
-              SizedBox(height: screenHeight * 0.05), // Adjust the fraction as needed,
+              SizedBox(height: screenHeight * 0.05),
               Expanded(
                 child: Container(
-
                   decoration: BoxDecoration(
-
                     borderRadius: BorderRadius.only(
                       topRight: Radius.circular(0),
                       topLeft: Radius.circular(baseRadius * 6.5),
@@ -95,8 +124,14 @@ class _NebeHomeState extends State<NebeHome> with SingleTickerProviderStateMixin
                         children: [
                           _buildAnimatedContainer("6571 Voters", 'lib/images/voter.jpg', screenHeight, screenWidth, baseRadius, 0),
                           SizedBox(height: screenHeight * 0.02),
-                          _buildAnimatedContainer("105 Political Parties", 'lib/images/political party.jpg', screenHeight, screenWidth, baseRadius, 1),
-                          SizedBox(height: screenHeight * 0.02),
+                          _buildAnimatedContainer("$_politicalPartyCount Political Parties", 'lib/images/political party.jpg', screenHeight, screenWidth, baseRadius, 1,onTap: () {
+    // Define what happens when the container is tapped
+    Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => PoliticalPartyList()), // Replace with your actual destination page
+    );
+    },),
+                          SizedBox(height: screenHeight * 0.02, ),
                           _buildAnimatedContainer("105 Polling Stations", 'lib/images/poling sation.webp', screenHeight, screenWidth, baseRadius, 2),
                           SizedBox(height: screenHeight * 0.02),
                           _buildAnimatedContainer("105 Regions", 'lib/images/region.webp', screenHeight, screenWidth, baseRadius, 3),
@@ -113,39 +148,36 @@ class _NebeHomeState extends State<NebeHome> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildAnimatedContainer(String title, String imagePath, double screenHeight, double screenWidth, double baseRadius, int index) {
+  Widget _buildAnimatedContainer(String title, String imagePath, double screenHeight, double screenWidth, double baseRadius, int index, {Function()? onTap}) {
     return SlideTransition(
-      position: Tween<Offset>(
-        begin: Offset(0, -1), // Start above the screen
-        end: Offset(0, 0), // End at original position
-      ).animate(CurvedAnimation(
-        parent: _controller,
-        curve: Interval(index * 0.2, 1.0, curve: Curves.easeOut),
-      )),
-      child: Center(
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(baseRadius)),
-            color: Colors.grey,
-            image: DecorationImage(
-              image: AssetImage(imagePath),
-              fit: BoxFit.cover,
+      position: _animations[index],
+      child: GestureDetector(
+        onTap: onTap,
+        child: Center(
+          child: Container(
+            height: screenHeight * 0.25,
+            width: screenWidth * 0.85,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(baseRadius)),
+              color: Colors.grey,
+              image: DecorationImage(
+                image: AssetImage(imagePath),
+                fit: BoxFit.cover,
+              ),
             ),
-          ),
-          height: screenHeight * 0.25,
-          width: screenWidth * 0.85,
-          child: Padding(
-            padding: EdgeInsets.only(top: screenHeight * 0.21),
-            child: Container(
-              color: Color(0xff2193b0),
-              width: screenWidth * 0.85,
-              child: Center(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: screenWidth * 0.06,
-                    color: Colors.white,
+            child: Padding(
+              padding: EdgeInsets.only(top: screenHeight * 0.21),
+              child: Container(
+                color: Color(0xff2193b0),
+                width: screenWidth * 0.85,
+                child: Center(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: screenWidth * 0.06,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -156,3 +188,5 @@ class _NebeHomeState extends State<NebeHome> with SingleTickerProviderStateMixin
     );
   }
 }
+
+

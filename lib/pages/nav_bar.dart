@@ -3,8 +3,11 @@ import 'package:e_voting/pages/announcements.dart';
 import 'package:e_voting/pages/home_page.dart';
 import 'package:e_voting/pages/loginpage.dart';
 import 'package:e_voting/pages/nebe_home.dart';
+import 'package:e_voting/pages/schedule_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:e_voting/pages/political_party_list.dart';
+import 'package:e_voting/pages/ballot.dart';
 
 class Navbarss extends StatelessWidget {
   const Navbarss({super.key});
@@ -46,7 +49,9 @@ child: ListView(
     ListTile(
       leading: Icon(Icons.group),
       title: Text("Political Party"),
-      onTap: ()=>null,
+      onTap: () {
+      Navigator.push(context, MaterialPageRoute(builder: (context)=>PoliticalPartyList()));
+      },
     ),
     ListTile(
       leading: Icon(Icons.how_to_vote_outlined),
@@ -60,7 +65,17 @@ child: ListView(
     ListTile(
       leading: Icon(Icons.ballot),
       title: Text("Ballots"),
-      onTap: ()=>null,
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context)=>VotingPollHome()));
+      },
+    ),
+
+    ListTile(
+      leading: Icon(Icons.schedule),
+      title: Text("Schedule"),
+      onTap: (){
+        Navigator.push(context, MaterialPageRoute(builder: (context)=>schedulelist()));
+      },
     ),
     Divider(),
     ListTile(

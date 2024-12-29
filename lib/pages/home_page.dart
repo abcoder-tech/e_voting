@@ -1,3 +1,4 @@
+import 'package:e_voting/pages/political_party_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'nav_bar.dart';
