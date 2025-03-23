@@ -2,14 +2,26 @@ import 'dart:convert';
 
 import 'package:e_voting/components/mybotton.dart';
 import 'package:e_voting/components/mytextfiled.dart';
-import 'package:e_voting/pages/home_page.dart';
+import 'package:e_voting/pages/NEBE/home_page.dart';
+import 'package:e_voting/pages/constituencies/constituency_home_page.dart';
+import 'package:e_voting/pages/constituencies/news.dart';
+import 'package:e_voting/pages/political_party/news.dart';
+import 'package:e_voting/pages/political_party/political_party_home_page.dart';
+import 'package:e_voting/pages/polling_station/news.dart';
+import 'package:e_voting/pages/polling_station/polling_station_home_page.dart';
+import 'package:e_voting/pages/voter/news.dart';
+import 'package:e_voting/pages/voter/voter_home.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class loginPage extends StatefulWidget {
-  static const String apiUrl= 'http://192.168.182.27:5000/';
+  static const String apiUrl= 'http://192.168.64.27:5000/';
 
   const loginPage({super.key});
 
@@ -17,14 +29,38 @@ class loginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<loginPage> {
+class _LoginPageState extends State<loginPage> with SingleTickerProviderStateMixin {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
-  bool _isnotvalidu=false;
-  bool _isnotvalidp=false;
+  bool _isnotvalidu = false;
+  bool _isnotvalidp = false;
   bool _isPasswordObscured = true;
-  static const String apiUrl = 'http://192.168.182.27:5000/';
+  static const String apiUrl = 'http://192.168.64.27:5000/';
   bool _isLoading = false;
+
+  // Animation variables
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize the AnimationController and Animation
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true); // Repeat the animation
+
+    _animation = Tween<double>(begin: 20.0, end: 30.0).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose(); // Dispose of the controller when done
+    super.dispose();
+  }
+
 
   void signUserIn() async{
     if (usernameController.text.isNotEmpty && passwordController.text.isNotEmpty) {
@@ -35,12 +71,12 @@ class _LoginPageState extends State<loginPage> {
       setState(() => _isLoading = true);
 
       var regBody = {
-        "email": usernameController.text,
+        "ID": usernameController.text,
         "password": passwordController.text
       };
       try {
         var response = await http.post(
-          Uri.parse(apiUrl+"register"),
+          Uri.parse(apiUrl+"login"),
           headers: {"Content-Type": "application/json"},
           body: jsonEncode(regBody),
         );
@@ -48,105 +84,49 @@ class _LoginPageState extends State<loginPage> {
         var jsonResponse = jsonDecode(response.body);
 
         if (jsonResponse['status']) {
-          SnackBar(content: Container(
-            padding:const EdgeInsets.all(8),
-            height: 80,
-            decoration: BoxDecoration(
-                color: Colors.green,
-                borderRadius: BorderRadius.all(Radius.circular(10))
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.check_circle,
-                  color: Colors.white,
-                  size: 40,),
-                SizedBox(width: 20,),
-                Expanded(child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Success",
-                      style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold
-                      ),
-                    ),
-                    Spacer(),
-                    Text(
-                      "You Are Sucessfully Registered",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
+          String role =jsonResponse['message'];
 
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    )
-                  ],
-                ))
-              ],
-            ),
-          ),
-            backgroundColor: Colors.transparent,
-            behavior: SnackBarBehavior.floating,
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('userId', usernameController.text);
+
+
+          QuickAlert.show(
+              context:context,
+              type:QuickAlertType.success,
+              text:"you succesfully login",
           );
+          await Future.delayed(Duration(seconds: 2));
+          if(role=="admin"){
+            Navigator.push(context, MaterialPageRoute(builder: (context) => homepage()));
+          }else if(role=="Political Party"){
+            Navigator.push(context, MaterialPageRoute(builder: (context) => userAnnouncementList()));
+          }else if(role=="Constituency"){
+            Navigator.push(context, MaterialPageRoute(builder: (context) => conAnnouncementList()));
+        }else if(role=="Polling Station"){
+            Navigator.push(context, MaterialPageRoute(builder: (context) => coonAnnouncementList()));
+          }else if(role=="Voter"){
+            Navigator.push(context, MaterialPageRoute(builder: (context) => uuserAnnouncementList()));
+          }
 
-          Navigator.push(context, MaterialPageRoute(builder: (context) => homepage()));
         } else {
-          // Display error message based on response
-          final snackBar=  SnackBar(content: Container(
-            padding:const EdgeInsets.all(8),
-            height: 80,
-
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.all(Radius.circular(10)),
-
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.error,
-                  color: Colors.white,
-                      size: 40,),
-                  SizedBox(width: 20,),
-                  Expanded(child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                         "Eroor",
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold
-                        ),
-                      ),
-                      Spacer(),
-                      Text(
-                          jsonResponse['message'] ?? 'Something went wrong',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-
-                        ),
-                        maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                      )
-                    ],
-                  ))
-                ],
-              ),
-          ),backgroundColor: Colors.transparent,
-            behavior: SnackBarBehavior.floating,
-           duration: Duration(seconds: 3),
-           padding: EdgeInsets.all(16.0),
+        //  Navigator.push(context, MaterialPageRoute(builder: (context) => homepage()));
+          QuickAlert.show(
+            context: context,
+            type: QuickAlertType.error,
+            text: jsonResponse['message'] ?? 'Something went wrong',
           );
-         ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          await Future.delayed(Duration(seconds: 1));
+          // Display error message based on response
         }
        // Text(jsonResponse['message'] ?? 'Something went wrong')
       } catch (error) {
-        print(error);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erroor: $error')));
+        QuickAlert.show(
+          context:context,
+          type:QuickAlertType.error,
+          text:"$error",
+        );
+        await Future.delayed(Duration(seconds: 1));
+
       } finally {
         setState(() => _isLoading = false);
       }
@@ -168,37 +148,93 @@ class _LoginPageState extends State<loginPage> {
     }
 
 
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final double screenHeight = MediaQuery.of(context).size.height;
+    return WillPopScope(
+        onWillPop: () async {
+          // Prevent back navigation
+          return false;
+        },
+    child:
+
+    Scaffold(
       body: Stack(
         children: [
           Container(
             height: double.infinity,
             width: double.infinity,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xff2193b0),
-                  Color(0xff6dd5ed)
-                ],
-              ),
+
+              color: Color(0xFF5F4490)
             ),
-            child: Padding(
-              padding: EdgeInsets.only(top: 60, left: 22),
-              child: Text(
-                "Hello\nSign in!",
-                style: TextStyle(
-                  fontSize: 30,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 30),
+                  child: Column(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Color(0xff2193b0),
+                        ),
+                        height: 70,
+                        width: 90,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: AssetImage('lib/images/loginew.jpg'),
+                              //fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Color(0xFF5F4490),
+                        ),
+                        height: screenHeight * 0.1,
+                        width: double.infinity,
+                        child: Center(
+                          child: Text(
+                            "NATIONAL ELECTION BOARD OF ELECTION\n"
+                                "              የኢትዮጵያ ብሔራዊ ምርጫ ቦርድ"
+                            ,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20
+                            ),
+                          ),
+                        ),
+                      ),
+
+                     //
+                    ],
+                  ),
                 ),
-              ),
+                SizedBox(height: 10,),
+                AnimatedBuilder(
+                  animation: _animation,
+                  builder: (context, child) {
+                    return Text(
+
+                          "Trusted For Your Vote"
+                              ,
+                      style: TextStyle(
+                        fontSize: _animation.value,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(top: 200),
-
+            padding: EdgeInsets.only(top: 220),
             child: Container(
               margin: EdgeInsets.only(top: 30),
               decoration: BoxDecoration(
@@ -210,37 +246,30 @@ class _LoginPageState extends State<loginPage> {
               ),
               height: double.infinity,
               width: double.infinity,
-
               child: Center(
                 child: SingleChildScrollView(
-
                   child: Column(
-
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-
+                      // Your existing text fields...
                       mytextfiled(
-
                         hinttext: "Enter Username",
                         obscuretext: false,
                         controller: usernameController,
                         labeel: 'User Id',
-                       validity:  _isnotvalidu ? "Please Enter Username" : null,
+                        validity: _isnotvalidu ? "Please Enter Username" : null,
                         icoon: IconButton(
-                          icon: Icon(
-                            Icons.check ,
-                          ),
-                          onPressed: () {
-                          },
+                          icon: Icon(Icons.check),
+                          onPressed: () {},
                         ),
                       ),
                       mytextfiled(
-                        obscuretext:  _isPasswordObscured,
+                        obscuretext: _isPasswordObscured,
                         hinttext: "Enter Password",
                         controller: passwordController,
                         labeel: 'Password',
-                          validity:  _isnotvalidp ? "Please Enter Password" : null,
-                        icoon:  IconButton(
+                        validity: _isnotvalidp ? "Please Enter Password" : null,
+                        icoon: IconButton(
                           icon: Icon(
                             _isPasswordObscured ? Icons.visibility_off : Icons.visibility,
                           ),
@@ -270,11 +299,12 @@ class _LoginPageState extends State<loginPage> {
                       mybotton(
                         onTap: () {
                           signUserIn(); // Call the sign-in method
-
                         },
                         butttontext: 'Sign In',
                       ),
-                      const SizedBox(height: 100),
+                      const SizedBox(height: 40), // Adjust spacing
+
+
                     ],
                   ),
                 ),
@@ -283,6 +313,6 @@ class _LoginPageState extends State<loginPage> {
           )
         ],
       ),
-    );
+    ));
   }
 }

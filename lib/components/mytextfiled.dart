@@ -30,7 +30,7 @@ class mytextfiled extends StatelessWidget {
           label: Text(labeel,style: 
             TextStyle(
               fontWeight: FontWeight.bold,
-              color: Color(0xff2193b0),
+              color: Color(0xFF5F4490),
 fontSize: 20
             ),
           ),

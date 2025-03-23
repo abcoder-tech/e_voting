@@ -14,11 +14,7 @@ final Function()? onTap;
         padding: const EdgeInsets.all(25),
         margin: EdgeInsets.symmetric(horizontal: 30),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-              colors: [
-                Color(0xff2193b0),
-                Color(0xff6dd5ed),
-              ] ),
+         color: Color(0xFF5F4490),
           borderRadius: BorderRadius.circular(8),
 
         ),

@@ -39,6 +39,13 @@ dependencies:
   image_picker: ^0.8.9
   http:
   flutter_datetime_picker:
+  quickalert:
+  flutter_local_notifications:
+  permission_handler:
+  flutter_native_splash: ^2.4.3
+  vector_graphics: ^1.1.11+1
+  shared_preferences:
+  camera:
 
 dev_dependencies:
   flutter_test:
